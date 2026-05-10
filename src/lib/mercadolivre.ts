@@ -1,61 +1,24 @@
-import axios from "axios";
-
 const BASE_URL = "https://api.mercadolibre.com";
 
-// Guarda o token em memória para não buscar um novo a cada requisição
-let tokenCache: { token: string; expira: number } | null = null;
-
-async function getToken(): Promise<string> {
-  // Se já tem token válido, reutiliza
-  if (tokenCache && Date.now() < tokenCache.expira) {
-    return tokenCache.token;
-  }
-
-  const appId = process.env.ML_APP_ID;
-  const secret = process.env.ML_SECRET;
-
-  if (!appId || !secret) {
-    throw new Error("ML_APP_ID e ML_SECRET não configurados no .env");
-  }
-
-  const { data } = await axios.post(
-    "https://api.mercadolibre.com/oauth/token",
-    new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: appId,
-      client_secret: secret,
-    }),
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Accept: "application/json",
-      },
-    }
-  );
-
-  // Salva o token em cache (expira em 6 horas, salvamos com 5 min de margem)
-  tokenCache = {
-    token: data.access_token,
-    expira: Date.now() + (data.expires_in - 300) * 1000,
-  };
-
-  return tokenCache.token;
-}
-
 export async function buscarProdutosML(termo: string) {
-  const token = await getToken();
+  const url = `${BASE_URL}/sites/MLB/search?q=${encodeURIComponent(termo)}&limit=20`;
 
-  const { data } = await axios.get(`${BASE_URL}/sites/MLB/search`, {
-    params: {
-      q: termo,
-      limit: 20,
-    },
+  const res = await fetch(url, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      "User-Agent": "Mozilla/5.0 (compatible; CompraAqui/1.0)",
       Accept: "application/json",
     },
-    timeout: 10000,
+    next: { revalidate: 300 }, // cache de 5 minutos
   });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.message || `Erro ${res.status} ao buscar no ML`);
+  }
+
+  const data = await res.json();
+
+  if (!data.results || data.results.length === 0) return [];
 
   return data.results.map((item: any) => ({
     id: item.id,
@@ -71,14 +34,17 @@ export async function buscarProdutosML(termo: string) {
 
 export async function detalhesProdutoML(mlId: string) {
   try {
-    const token = await getToken();
-
-    const { data } = await axios.get(`${BASE_URL}/items/${mlId}`, {
+    const res = await fetch(`${BASE_URL}/items/${mlId}`, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        "User-Agent": "Mozilla/5.0 (compatible; CompraAqui/1.0)",
         Accept: "application/json",
       },
+      next: { revalidate: 300 },
     });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
 
     return {
       id: data.id,
@@ -93,7 +59,7 @@ export async function detalhesProdutoML(mlId: string) {
       disponivel: data.status === "active",
     };
   } catch (error) {
-    console.error("Erro ao buscar detalhes no ML:", error);
+    console.error("Erro detalhes ML:", error);
     return null;
   }
 }
