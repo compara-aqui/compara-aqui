@@ -15,9 +15,10 @@ export async function GET(request: NextRequest) {
     const produtos = await buscarProdutosML(termo.trim());
     return NextResponse.json({ produtos, total: produtos.length });
   } catch (error: any) {
-    console.error("Erro na rota de busca:", error?.message);
+    const detalhe = error?.response?.data || error?.message || "Erro desconhecido";
+    console.error("Erro detalhado:", JSON.stringify(detalhe));
     return NextResponse.json(
-      { error: error?.message || "Erro ao buscar produtos." },
+      { error: error?.message, detalhe },
       { status: 500 }
     );
   }
