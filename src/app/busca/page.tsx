@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { ResultadoBusca } from "@/types";
 import { Search, Loader2 } from "lucide-react";
 
-export default function BuscaPage() {
+function BuscaConteudo() {
   const searchParams = useSearchParams();
   const termo = searchParams.get("q") || "";
 
@@ -22,9 +22,7 @@ export default function BuscaPage() {
       setProdutos([]);
 
       try {
-        const res = await fetch(
-          `/api/buscar?q=${encodeURIComponent(termo)}`
-        );
+        const res = await fetch(`/api/buscar?q=${encodeURIComponent(termo)}`);
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error || "Erro ao buscar");
@@ -90,5 +88,20 @@ export default function BuscaPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function BuscaPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <Loader2 className="w-8 h-8 text-orange-400 animate-spin" />
+          <p className="text-gray-400 text-sm">Carregando...</p>
+        </div>
+      }
+    >
+      <BuscaConteudo />
+    </Suspense>
   );
 }
