@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buscarProdutosML } from "@/lib/mercadolivre";
+import { buscarProdutosAmazon } from "@/lib/mercadolivre";
 
 export async function GET(request: NextRequest) {
   const termo = request.nextUrl.searchParams.get("q");
@@ -12,13 +12,23 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const produtos = await buscarProdutosML(termo.trim());
-    return NextResponse.json({ produtos, total: produtos.length });
+    // Por enquanto busca só na Amazon
+    // ML será adicionado quando o scraper do ML estiver pronto
+    const produtos = await buscarProdutosAmazon(termo.trim());
+
+    // Filtra produtos sem preço para não quebrar o frontend
+    const produtosValidos = produtos.filter(
+      (p) => p.preco != null && p.preco > 0
+    );
+
+    return NextResponse.json({
+      produtos: produtosValidos,
+      total: produtosValidos.length,
+    });
   } catch (error: any) {
-    const detalhe = error?.response?.data || error?.message || "Erro desconhecido";
-    console.error("Erro detalhado:", JSON.stringify(detalhe));
+    console.error("Erro na rota de busca:", error?.message);
     return NextResponse.json(
-      { error: error?.message, detalhe },
+      { error: error?.message || "Erro ao buscar produtos." },
       { status: 500 }
     );
   }
