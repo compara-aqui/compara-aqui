@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Aplicação Next.js
+  web:
+    build: .
+    container_name: compara-aqui-web
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: file:./data/dev.db
+      LOG_LEVEL: debug
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - ./data:/app/data
+      - /app/node_modules
+    command: npm run dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # (Opcional) PostgreSQL para staging/production
+  # postgres:
+  #   image: postgres:16-alpine
+  #   container_name: compara-aqui-db
+  #   environment:
+  #     POSTGRES_USER: app
+  #     POSTGRES_PASSWORD: secure_password
+  #     POSTGRES_DB: compara_aqui
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
+
+# volumes:
+#   postgres_data:

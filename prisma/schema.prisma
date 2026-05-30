@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Produto {
+  id           String   @id @default(cuid())
+  titulo       String
+  loja         String   // amazon | mercadolivre
+  imagem       String?
+  categoria    String?
+  marca        String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  precos    PrecoProduto[]
+  historico HistoricoPreco[]
+
+  // Índice único: mesmo título + loja = mesmo produto
+  @@unique([titulo, loja])
+}
+
+model PrecoProduto {
+  id            String   @id @default(cuid())
+  produtoId     String
+  loja          String
+  preco         Float
+  precoOriginal Float?
+  frete         Float    @default(0)
+  urlProduto    String
+  urlAfiliado   String?
+  disponivel    Boolean  @default(true)
+  atualizadoEm  DateTime @updatedAt
+
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+
+  @@index([produtoId])
+}
+
+model HistoricoPreco {
+  id        String   @id @default(cuid())
+  produtoId String
+  loja      String
+  preco     Float
+  data      DateTime @default(now())
+
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+
+  @@index([produtoId])
+}
