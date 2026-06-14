@@ -1,0 +1,33 @@
+# Ignore banco de dados
+dev.db
+dev.db-journal
+data/
+
+# Next.js
+.next/
+*.tsbuildinfo
+out/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Playwright
+.cache/
+
+# OS
+Thumbs.db

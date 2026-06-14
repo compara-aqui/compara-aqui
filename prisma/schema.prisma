@@ -3,13 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model Produto {
   id           String   @id @default(cuid())
   titulo       String
+  loja         String   // amazon | mercadolivre
   imagem       String?
   categoria    String?
   marca        String?
@@ -18,6 +19,9 @@ model Produto {
 
   precos    PrecoProduto[]
   historico HistoricoPreco[]
+
+  // Índice único: mesmo título + loja = mesmo produto
+  @@unique([titulo, loja])
 }
 
 model PrecoProduto {
@@ -32,7 +36,9 @@ model PrecoProduto {
   disponivel    Boolean  @default(true)
   atualizadoEm  DateTime @updatedAt
 
-  produto Produto @relation(fields: [produtoId], references: [id])
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+
+  @@index([produtoId])
 }
 
 model HistoricoPreco {
@@ -42,5 +48,7 @@ model HistoricoPreco {
   preco     Float
   data      DateTime @default(now())
 
-  produto Produto @relation(fields: [produtoId], references: [id])
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+
+  @@index([produtoId])
 }
