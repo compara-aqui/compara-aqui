@@ -16,13 +16,13 @@ export function HistoricoModal({ isOpen, onClose, titulo, loja }: Props) {
 
   useEffect(() => {
     if (!isOpen) return;
-    
+
     async function fetchHistorico() {
       setLoading(true);
       try {
         const res = await fetch(`/api/historico?titulo=${encodeURIComponent(titulo)}&loja=${encodeURIComponent(loja)}`);
         const json = await res.json();
-        
+
         // Formatar data para o gráfico
         const chartData = (json.historico || []).map((h: any) => {
           const date = new Date(h.data);
@@ -31,12 +31,12 @@ export function HistoricoModal({ isOpen, onClose, titulo, loja }: Props) {
             preco: h.preco
           };
         });
-        
+
         // Se houver apenas 1 ponto, adicionamos um mock para o gráfico não ficar quebrado
         if (chartData.length === 1) {
-            chartData.unshift({ dia: "Antes", preco: chartData[0].preco });
+          chartData.unshift({ dia: "Antes", preco: chartData[0].preco });
         }
-        
+
         setDados(chartData);
       } catch (e) {
         console.error(e);
@@ -44,7 +44,7 @@ export function HistoricoModal({ isOpen, onClose, titulo, loja }: Props) {
         setLoading(false);
       }
     }
-    
+
     fetchHistorico();
   }, [isOpen, titulo, loja]);
 
@@ -62,29 +62,32 @@ export function HistoricoModal({ isOpen, onClose, titulo, loja }: Props) {
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <div className="p-6">
           <p className="text-sm text-gray-500 mb-6 truncate" title={titulo}>{titulo}</p>
-          
+
           {loading ? (
-             <div className="h-48 flex items-center justify-center">
-               <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
-             </div>
+            <div className="h-48 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+            </div>
           ) : dados.length > 0 ? (
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={dados} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
                   <XAxis dataKey="dia" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
-                  <YAxis 
-                    domain={['auto', 'auto']} 
-                    axisLine={false} 
-                    tickLine={false} 
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    axisLine={false}
+                    tickLine={false}
                     tick={{ fontSize: 12, fill: '#888' }}
                     tickFormatter={(value) => `R$ ${value}`}
                   />
-                  <Tooltip 
-                    formatter={(value: number) => [`R$ ${value.toFixed(2)}`, 'Preço']}
+                  <Tooltip
+                    formatter={(value) => [
+                      `R$ ${Number(value ?? 0).toFixed(2)}`,
+                      "Preço",
+                    ]}
                     labelStyle={{ color: '#666' }}
                   />
                   <Line type="monotone" dataKey="preco" stroke="#f97316" strokeWidth={3} dot={{ r: 4, fill: '#f97316', strokeWidth: 0 }} activeDot={{ r: 6 }} />

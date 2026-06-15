@@ -34,4 +34,5 @@ export interface ResultadoBusca {
   urlProduto: string;
   loja: "mercadolivre" | "amazon";
   frete: number;
+  freteGratis?: boolean;
 }
