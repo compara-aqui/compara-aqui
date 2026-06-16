@@ -5,6 +5,10 @@ import { ProductCard } from "@/components/ProductCard";
 import { ResultadoBusca } from "@/types";
 import { Search, Loader2 } from "lucide-react";
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function BuscaConteudo() {
   const searchParams = useSearchParams();
   const termo = searchParams.get("q") || "";
@@ -26,13 +30,22 @@ function BuscaConteudo() {
 
       try {
         const res = await fetch(`/api/buscar?q=${encodeURIComponent(termo)}`);
-        const data = await res.json();
+        const contentType = res.headers.get("content-type") || "";
+        const data = contentType.includes("application/json")
+          ? await res.json()
+          : null;
 
-        if (!res.ok) throw new Error(data.error || "Erro ao buscar");
+        if (!res.ok) {
+          throw new Error(data?.error || "Erro ao buscar produtos.");
+        }
+
+        if (!data) {
+          throw new Error("A busca retornou uma resposta invalida.");
+        }
 
         setProdutos(data.produtos || []);
-      } catch (err: any) {
-        setErro(err.message || "Não foi possível buscar os produtos.");
+      } catch (err: unknown) {
+        setErro(getErrorMessage(err) || "Nao foi possivel buscar os produtos.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -59,76 +72,111 @@ function BuscaConteudo() {
             )}
           </div>
         </div>
-        
+
         {!loading && produtos.length > 0 && (
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <label htmlFor="ordenacao" className="text-sm text-gray-500 font-medium">Ordenar por:</label>
+            <label htmlFor="ordenacao" className="text-sm text-gray-500 font-medium">
+              Ordenar por:
+            </label>
             <select
               id="ordenacao"
               value={ordenacao}
               onChange={(e) => setOrdenacao(e.target.value)}
               className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2"
             >
-              <option value="menor_preco">Menor Preço</option>
-              <option value="maior_preco">Maior Preço</option>
+              <option value="menor_preco">Menor Preco</option>
+              <option value="maior_preco">Maior Preco</option>
             </select>
           </div>
         )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        
-        {/* Sidebar de Filtros */}
         <div className="w-full lg:w-64 shrink-0">
           <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm sticky top-24">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
               <span className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-sm">
                 <Search className="w-4 h-4" />
               </span>
-              Filtros Avançados
+              Filtros Avancados
             </h3>
-            
+
             <div className="mb-6">
               <h4 className="text-sm font-semibold text-gray-700 mb-3">Lojas</h4>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="radio" name="loja" value="todas" checked={filtroLoja === "todas"} onChange={() => setFiltroLoja("todas")} className="w-4 h-4 text-orange-500 focus:ring-orange-500 border-gray-300" />
-                  <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">Todas as lojas</span>
+                  <input
+                    type="radio"
+                    name="loja"
+                    value="todas"
+                    checked={filtroLoja === "todas"}
+                    onChange={() => setFiltroLoja("todas")}
+                    className="w-4 h-4 text-orange-500 focus:ring-orange-500 border-gray-300"
+                  />
+                  <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">
+                    Todas as lojas
+                  </span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="radio" name="loja" value="amazon" checked={filtroLoja === "amazon"} onChange={() => setFiltroLoja("amazon")} className="w-4 h-4 text-orange-500 focus:ring-orange-500 border-gray-300" />
-                  <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">Amazon</span>
+                  <input
+                    type="radio"
+                    name="loja"
+                    value="amazon"
+                    checked={filtroLoja === "amazon"}
+                    onChange={() => setFiltroLoja("amazon")}
+                    className="w-4 h-4 text-orange-500 focus:ring-orange-500 border-gray-300"
+                  />
+                  <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">
+                    Amazon
+                  </span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="radio" name="loja" value="mercadolivre" checked={filtroLoja === "mercadolivre"} onChange={() => setFiltroLoja("mercadolivre")} className="w-4 h-4 text-orange-500 focus:ring-orange-500 border-gray-300" />
-                  <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">Mercado Livre</span>
+                  <input
+                    type="radio"
+                    name="loja"
+                    value="mercadolivre"
+                    checked={filtroLoja === "mercadolivre"}
+                    onChange={() => setFiltroLoja("mercadolivre")}
+                    className="w-4 h-4 text-orange-500 focus:ring-orange-500 border-gray-300"
+                  />
+                  <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">
+                    Mercado Livre
+                  </span>
                 </label>
               </div>
             </div>
 
             <div className="border-t border-gray-100 pt-5">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">Benefícios</h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Beneficios</h4>
               <label className="flex items-center gap-3 cursor-pointer group">
-                <input type="checkbox" checked={filtroFrete} onChange={(e) => setFiltroFrete(e.target.checked)} className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 border-gray-300" />
-                <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">Frete Grátis</span>
+                <input
+                  type="checkbox"
+                  checked={filtroFrete}
+                  onChange={(e) => setFiltroFrete(e.target.checked)}
+                  className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 border-gray-300"
+                />
+                <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">
+                  Frete Gratis
+                </span>
               </label>
             </div>
           </div>
         </div>
 
-        {/* Resultados */}
         <div className="flex-1">
           {loading && (
             <div className="flex flex-col items-center justify-center py-24 gap-4">
               <Loader2 className="w-8 h-8 text-orange-400 animate-spin" />
-              <p className="text-gray-400 text-sm">Buscando os melhores preços...</p>
+              <p className="text-gray-400 text-sm">Buscando os melhores precos...</p>
             </div>
           )}
 
           {erro && (
             <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center">
               <p className="text-red-500 font-medium">{erro}</p>
-              <p className="text-red-400 text-sm mt-1">Tente novamente em alguns instantes.</p>
+              <p className="text-red-400 text-sm mt-1">
+                Tente novamente em alguns instantes.
+              </p>
             </div>
           )}
 
@@ -142,38 +190,50 @@ function BuscaConteudo() {
             </div>
           )}
 
-          {!loading && produtos.length > 0 && (() => {
-            const produtosFiltrados = produtos.filter((p) => {
-              if (filtroLoja !== "todas" && p.loja !== filtroLoja) return false;
-              if (filtroFrete && !p.freteGratis && p.frete !== 0) return false;
-              return true;
-            });
+          {!loading &&
+            produtos.length > 0 &&
+            (() => {
+              const produtosFiltrados = produtos.filter((p) => {
+                if (filtroLoja !== "todas" && p.loja !== filtroLoja) return false;
+                if (filtroFrete && !p.freteGratis && p.frete !== 0) return false;
+                return true;
+              });
 
-            const produtosOrdenados = [...produtosFiltrados].sort((a, b) => {
-              const precoA = a.preco || 0;
-              const precoB = b.preco || 0;
-              if (ordenacao === "menor_preco") return precoA - precoB;
-              if (ordenacao === "maior_preco") return precoB - precoA;
-              return 0;
-            });
+              const produtosOrdenados = [...produtosFiltrados].sort((a, b) => {
+                const precoA = a.preco || 0;
+                const precoB = b.preco || 0;
+                if (ordenacao === "menor_preco") return precoA - precoB;
+                if (ordenacao === "maior_preco") return precoB - precoA;
+                return 0;
+              });
 
-            if (produtosOrdenados.length === 0) {
+              if (produtosOrdenados.length === 0) {
+                return (
+                  <div className="flex flex-col items-center justify-center py-16 gap-3">
+                    <p className="text-gray-500 font-medium">
+                      Nenhum produto atende aos filtros
+                    </p>
+                    <button
+                      onClick={() => {
+                        setFiltroLoja("todas");
+                        setFiltroFrete(false);
+                      }}
+                      className="text-orange-500 text-sm font-semibold hover:underline"
+                    >
+                      Limpar filtros
+                    </button>
+                  </div>
+                );
+              }
+
               return (
-                <div className="flex flex-col items-center justify-center py-16 gap-3">
-                  <p className="text-gray-500 font-medium">Nenhum produto atende aos filtros</p>
-                  <button onClick={() => { setFiltroLoja("todas"); setFiltroFrete(false); }} className="text-orange-500 text-sm font-semibold hover:underline">Limpar filtros</button>
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {produtosOrdenados.map((produto, index) => (
+                    <ProductCard key={`${produto.urlProduto}-${index}`} produto={produto} />
+                  ))}
                 </div>
               );
-            }
-
-            return (
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {produtosOrdenados.map((produto, index) => (
-                  <ProductCard key={`${produto.urlProduto}-${index}`} produto={produto} />
-                ))}
-              </div>
-            );
-          })()}
+            })()}
         </div>
       </div>
     </div>

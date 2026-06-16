@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
-
-const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "CompraAqui — Compare preços de verdade",
@@ -18,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${geist.className} bg-gray-50 text-gray-900 antialiased`}>
+      <body className="bg-gray-50 text-gray-900 antialiased">
         <Navbar />
         <main>{children}</main>
         <footer className="mt-20 border-t border-gray-100 bg-white">

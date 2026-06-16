@@ -1,43 +1,80 @@
-import { buscarAmazon, buscarMercadoLivre, ProdutoScrapado } from "./scraper";
+import type { ProdutoScrapado } from "./scraper";
+import { buscarAmazonHttp } from "./scraper-amazon-http";
 import { buscarMercadoLivreHttp } from "./scraper-ml-http";
 
-// Busca produtos do Mercado Livre via Playwright (com fallback HTTP)
+const isVercel = process.env.VERCEL === "1";
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export async function buscarProdutosML(
   termo: string
 ): Promise<ProdutoScrapado[]> {
-  // Tenta HTTP primeiro por ser muito mais rápido
   try {
     console.log("[ML-Service] Tentando buscar via HTTP...");
     const produtos = await buscarMercadoLivreHttp(termo, 1);
-    if (produtos && produtos.length > 0) {
-      console.log(`[ML-Service] ✓ Busca via HTTP bem-sucedida (${produtos.length} produtos)`);
+    if (produtos.length > 0) {
+      console.log(
+        `[ML-Service] Busca via HTTP bem-sucedida (${produtos.length} produtos)`
+      );
       return produtos;
     }
-    console.log("[ML-Service] HTTP retornou 0 produtos, tentando fallback Playwright...");
-  } catch (err: any) {
-    console.warn("[ML-Service] Falha no scraper HTTP:", err.message);
-    console.log("[ML-Service] Tentando fallback Playwright...");
+  } catch (err: unknown) {
+    console.warn("[ML-Service] Falha no scraper HTTP:", getErrorMessage(err));
   }
 
-  // Fallback para Playwright (mais lento, porém burla bloqueios avançados)
+  if (isVercel) {
+    console.warn("[ML-Service] Ignorando fallback Playwright na Vercel");
+    return [];
+  }
+
   try {
+    console.log("[ML-Service] Tentando fallback Playwright...");
+    const { buscarMercadoLivre } = await import("./scraper");
     return await buscarMercadoLivre(termo, 1);
-  } catch (err: any) {
-    console.error("[ML-Service] Falha no fallback Playwright:", err.message);
+  } catch (err: unknown) {
+    console.error("[ML-Service] Falha no fallback Playwright:", getErrorMessage(err));
     return [];
   }
 }
 
-// Busca produtos da Amazon via Playwright
 export async function buscarProdutosAmazon(
   termo: string
 ): Promise<ProdutoScrapado[]> {
-  return await buscarAmazon(termo, 1);
+  try {
+    console.log("[Amazon-Service] Tentando buscar via HTTP...");
+    const produtos = await buscarAmazonHttp(termo, 1);
+    if (produtos.length > 0) {
+      console.log(
+        `[Amazon-Service] Busca via HTTP bem-sucedida (${produtos.length} produtos)`
+      );
+      return produtos;
+    }
+  } catch (err: unknown) {
+    console.warn("[Amazon-Service] Falha no scraper HTTP:", getErrorMessage(err));
+  }
+
+  if (isVercel) {
+    console.warn("[Amazon-Service] Ignorando fallback Playwright na Vercel");
+    return [];
+  }
+
+  try {
+    console.log("[Amazon-Service] Tentando fallback Playwright...");
+    const { buscarAmazon } = await import("./scraper");
+    return await buscarAmazon(termo, 1);
+  } catch (err: unknown) {
+    console.error(
+      "[Amazon-Service] Falha no fallback Playwright:",
+      getErrorMessage(err)
+    );
+    return [];
+  }
 }
 
-export async function detalhesProdutoML(
-  mlId: string
-): Promise<any | null> {
+export async function detalhesProdutoML(mlId: string): Promise<unknown | null> {
+  void mlId;
   return null;
 }
 

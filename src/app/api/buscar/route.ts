@@ -7,6 +7,10 @@ import {
   buscarCacheFallback24h,
 } from "@/lib/cache";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 // Wrapper com timeout para promise
 function comTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
@@ -15,6 +19,10 @@ function comTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
       setTimeout(() => reject(new Error(`Timeout após ${ms}ms`)), ms)
     ),
   ]);
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export async function GET(request: NextRequest) {
@@ -53,8 +61,8 @@ export async function GET(request: NextRequest) {
           try {
             console.log(`[SWR] Iniciando scraping em background para "${termoLimpo}"`);
             const [produtosAmazon, produtosML] = await Promise.all([
-              comTimeout(buscarProdutosAmazon(termoLimpo), 25000).catch(() => []),
-              comTimeout(buscarProdutosML(termoLimpo), 25000).catch(() => []),
+              comTimeout(buscarProdutosAmazon(termoLimpo), 20000).catch(() => []),
+              comTimeout(buscarProdutosML(termoLimpo), 20000).catch(() => []),
             ]);
             const todos = [...produtosAmazon, ...produtosML].filter(p => p.preco != null && p.preco > 0);
             if (todos.length > 0) {
@@ -83,11 +91,11 @@ export async function GET(request: NextRequest) {
 
     // 2. Busca em ambos em paralelo com timeout
     const [produtosAmazon, produtosML] = await Promise.all([
-      comTimeout(buscarProdutosAmazon(termoLimpo), 25000).catch((err) => {
+      comTimeout(buscarProdutosAmazon(termoLimpo), 20000).catch((err) => {
         console.error("[API] Erro Amazon:", err.message);
         return [];
       }),
-      comTimeout(buscarProdutosML(termoLimpo), 25000).catch((err) => {
+      comTimeout(buscarProdutosML(termoLimpo), 20000).catch((err) => {
         console.error("[API] Erro Mercado Livre:", err.message);
         return [];
       }),
@@ -121,10 +129,11 @@ export async function GET(request: NextRequest) {
       total: produtosValidos.length,
       fonte: "scraper",
     });
-  } catch (error: any) {
-    console.error("[API] Erro na rota de busca:", error?.message);
+  } catch (error: unknown) {
+    const message = getErrorMessage(error);
+    console.error("[API] Erro na rota de busca:", message);
     return NextResponse.json(
-      { error: error?.message || "Erro ao buscar produtos." },
+      { error: message || "Erro ao buscar produtos." },
       { status: 500 }
     );
   }
