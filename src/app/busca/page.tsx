@@ -16,7 +16,7 @@ function BuscaConteudo() {
   const [produtos, setProdutos] = useState<ResultadoBusca[]>([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
-  const [ordenacao, setOrdenacao] = useState("menor_preco");
+  const [ordenacao, setOrdenacao] = useState("relevancia");
   const [filtroLoja, setFiltroLoja] = useState<string>("todas");
   const [filtroFrete, setFiltroFrete] = useState<boolean>(false);
 
@@ -84,6 +84,7 @@ function BuscaConteudo() {
               onChange={(e) => setOrdenacao(e.target.value)}
               className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2"
             >
+              <option value="relevancia">Relevancia</option>
               <option value="menor_preco">Menor Preco</option>
               <option value="maior_preco">Maior Preco</option>
             </select>
