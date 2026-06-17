@@ -93,6 +93,24 @@ function extrairTipoAcessorio(tokens: Set<string>): string | null {
   return null;
 }
 
+// Numeros curtos (modelo: "15", "16e", "rtx4050" nao entra, mas "s24" sim)
+// sao o sinal mais forte de que dois produtos sao versoes diferentes
+// (iPhone 15 vs iPhone 16e), mesmo quando o resto do titulo e quase
+// identico. Tratamos como campo obrigatorio assim como variante/cor.
+function extrairNumerosModelo(tokens: Set<string>): Set<string> {
+  const numeros = new Set<string>();
+  for (const token of tokens) {
+    if (/^\d{1,2}[a-z]?$/.test(token)) numeros.add(token);
+  }
+  return numeros;
+}
+
+function numerosCompativeis(a: Set<string>, b: Set<string>): boolean {
+  if (a.size === 0 || b.size === 0) return true;
+  for (const numero of a) if (b.has(numero)) return true;
+  return false;
+}
+
 function extrairTokensSignificativos(textoNormalizado: string): Set<string> {
   return new Set(
     textoNormalizado
@@ -111,6 +129,7 @@ function similaridadeJaccard(a: Set<string>, b: Set<string>): number {
 
 interface GrupoInterno {
   tokens: Set<string>;
+  numeros: Set<string>;
   capacidade: string | null;
   cor: string | null;
   variante: string | null;
@@ -130,6 +149,7 @@ export function agruparProdutos(produtos: ResultadoBusca[]): ProdutoAgrupado[] {
   for (const produto of produtos) {
     const normalizado = normalizarTexto(produto.titulo);
     const tokens = extrairTokensSignificativos(normalizado);
+    const numeros = extrairNumerosModelo(tokens);
     const capacidade = extrairCapacidade(normalizado);
     const cor = extrairCor(tokens);
     const variante = extrairVariante(normalizado);
@@ -144,6 +164,9 @@ export function agruparProdutos(produtos: ResultadoBusca[]): ProdutoAgrupado[] {
       // (inclusive ausente vs presente) bloqueia o match
       if ((variante || grupo.variante) && variante !== grupo.variante) continue;
       if ((tipoAcessorio || grupo.tipoAcessorio) && tipoAcessorio !== grupo.tipoAcessorio) continue;
+      // numero do modelo (15 vs 16e) tambem e estrito: sem nenhuma
+      // intersecao, sao versoes diferentes mesmo com o resto do titulo igual
+      if (!numerosCompativeis(numeros, grupo.numeros)) continue;
 
       if (similaridadeJaccard(tokens, grupo.tokens) >= LIMIAR_SIMILARIDADE) {
         grupoEncontrado = grupo;
@@ -154,12 +177,13 @@ export function agruparProdutos(produtos: ResultadoBusca[]): ProdutoAgrupado[] {
     if (grupoEncontrado) {
       grupoEncontrado.produtos.push(produto);
       for (const token of tokens) grupoEncontrado.tokens.add(token);
+      for (const numero of numeros) grupoEncontrado.numeros.add(numero);
       if (!grupoEncontrado.capacidade && capacidade) grupoEncontrado.capacidade = capacidade;
       if (!grupoEncontrado.cor && cor) grupoEncontrado.cor = cor;
       if (!grupoEncontrado.variante && variante) grupoEncontrado.variante = variante;
       if (!grupoEncontrado.tipoAcessorio && tipoAcessorio) grupoEncontrado.tipoAcessorio = tipoAcessorio;
     } else {
-      grupos.push({ tokens, capacidade, cor, variante, tipoAcessorio, produtos: [produto] });
+      grupos.push({ tokens, numeros, capacidade, cor, variante, tipoAcessorio, produtos: [produto] });
     }
   }
 
@@ -185,6 +209,7 @@ export function agruparProdutos(produtos: ResultadoBusca[]): ProdutoAgrupado[] {
     for (const produtoIsolado of foraDaFaixa) {
       gruposRefinados.push({
         tokens: new Set(),
+        numeros: new Set(),
         capacidade: null,
         cor: null,
         variante: null,
