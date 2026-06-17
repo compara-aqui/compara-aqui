@@ -1,81 +1,67 @@
 "use client";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ShoppingCart, Heart, Flame, ThumbsUp, TrendingDown } from "lucide-react";
-import { HistoricoModal } from "./HistoricoModal";
-
-interface ProdutoCard {
-  titulo: string;
-  preco: number | null;
-  precoOriginal?: number | null;
-  descontoPercentual?: number | null;
-  imagem?: string;
-  imagemUrl?: string;
-  urlProduto: string;
-  loja: "amazon" | "kabum" | "americanas";
-  frete?: number;
-  freteGratis?: boolean;
-  avaliacao?: number | null;
-  numAvaliacoes?: number | null;
-  isPrime?: boolean;
-}
+import { ShoppingCart, Heart, Flame, ThumbsUp, Scale } from "lucide-react";
+import type { ProdutoAgrupado } from "@/lib/agrupar-produtos";
 
 interface Props {
-  produto: ProdutoCard;
+  produto: ProdutoAgrupado;
 }
 
+const LOJA_LABELS: Record<string, string> = {
+  amazon: "Amazon",
+  kabum: "Kabum",
+  americanas: "Americanas",
+};
+const LOJA_CORES: Record<string, string> = {
+  amazon: "bg-orange-100 text-orange-800",
+  kabum: "bg-blue-100 text-blue-800",
+  americanas: "bg-red-100 text-red-800",
+};
+
 export function ProductCard({ produto }: Props) {
-  const [modalOpen, setModalOpen] = useState(false);
+  const router = useRouter();
+  const melhorOferta = produto.ofertas[0];
+  const outrasLojas = produto.ofertas.length - 1;
 
-  const lojaLabels: Record<typeof produto.loja, string> = {
-    amazon: "Amazon",
-    kabum: "Kabum",
-    americanas: "Americanas",
-  };
-  const lojaColors: Record<typeof produto.loja, string> = {
-    amazon: "bg-orange-100 text-orange-800",
-    kabum: "bg-blue-100 text-blue-800",
-    americanas: "bg-red-100 text-red-800",
-  };
-  const lojaLabel = lojaLabels[produto.loja];
-  const lojaColor = lojaColors[produto.loja];
+  const lojaLabel = LOJA_LABELS[melhorOferta.loja] ?? melhorOferta.loja;
+  const lojaColor = LOJA_CORES[melhorOferta.loja] ?? "bg-gray-100 text-gray-800";
 
-  const imagem = produto.imagemUrl || produto.imagem || "";
-  const freteGratis =
-    produto.freteGratis || produto.frete === 0;
-
-  const precoFormatado =
-    produto.preco != null
-      ? produto.preco.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        })
-      : "Ver preço";
+  const precoFormatado = melhorOferta.preco.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 
   const precoOriginalFormatado =
-    produto.precoOriginal != null
-      ? produto.precoOriginal.toLocaleString("pt-BR", {
+    melhorOferta.precoOriginal != null
+      ? melhorOferta.precoOriginal.toLocaleString("pt-BR", {
           style: "currency",
           currency: "BRL",
         })
       : null;
 
   const getDealScore = () => {
-    if (!produto.descontoPercentual) return null;
-    if (produto.descontoPercentual >= 20) return { label: "Ótimo Preço", icon: Flame, color: "text-red-500", bg: "bg-red-50 border-red-100" };
-    if (produto.descontoPercentual >= 10) return { label: "Bom Preço", icon: ThumbsUp, color: "text-blue-500", bg: "bg-blue-50 border-blue-100" };
+    if (!melhorOferta.descontoPercentual) return null;
+    if (melhorOferta.descontoPercentual >= 20) return { label: "Ótimo Preço", icon: Flame, color: "text-red-500", bg: "bg-red-50 border-red-100" };
+    if (melhorOferta.descontoPercentual >= 10) return { label: "Bom Preço", icon: ThumbsUp, color: "text-blue-500", bg: "bg-blue-50 border-blue-100" };
     return null;
   };
   const deal = getDealScore();
 
+  function abrirComparacao() {
+    const dados = encodeURIComponent(JSON.stringify(produto));
+    router.push(`/produto?d=${dados}`);
+  }
+
   return (
     <div
-      className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col relative"
+      onClick={abrirComparacao}
+      className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col relative cursor-pointer"
     >
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
-        {imagem ? (
+        {produto.imagemUrl ? (
           <Image
-            src={imagem}
+            src={produto.imagemUrl}
             alt={produto.titulo}
             fill
             className="object-contain p-4 group-hover:scale-105 transition-transform duration-200"
@@ -96,16 +82,17 @@ export function ProductCard({ produto }: Props) {
           {lojaLabel}
         </span>
 
-        {produto.descontoPercentual != null && produto.descontoPercentual > 0 && (
+        {melhorOferta.descontoPercentual != null && melhorOferta.descontoPercentual > 0 && (
           <span className="absolute bottom-2 left-2 text-xs font-bold px-2 py-1 rounded-full bg-red-500 text-white shadow-sm z-10">
-            -{produto.descontoPercentual}%
+            -{melhorOferta.descontoPercentual}%
           </span>
         )}
 
-        <button 
+        <button
           className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors z-10 shadow-sm"
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             // Lógica de alerta/favoritos no futuro
             alert("Produto adicionado aos alertas!");
           }}
@@ -120,10 +107,10 @@ export function ProductCard({ produto }: Props) {
           {produto.titulo}
         </p>
 
-        {produto.avaliacao != null && (
+        {melhorOferta.avaliacao != null && (
           <div className="flex items-center gap-1">
             <span className="text-yellow-400 text-xs">★</span>
-            <span className="text-xs text-gray-500">{produto.avaliacao.toFixed(1)}</span>
+            <span className="text-xs text-gray-500">{melhorOferta.avaliacao.toFixed(1)}</span>
           </div>
         )}
 
@@ -141,19 +128,19 @@ export function ProductCard({ produto }: Props) {
             </p>
           )}
           <p className="text-xl font-bold text-gray-900">{precoFormatado}</p>
-          {freteGratis && (
+          {melhorOferta.freteGratis && (
             <p className="text-xs text-green-600 font-medium mt-1">
               ✓ Frete gratis
             </p>
           )}
-          {produto.isPrime && (
+          {melhorOferta.isPrime && (
             <p className="text-xs text-blue-600 font-medium">Prime</p>
           )}
         </div>
 
         <div className="flex items-center gap-2 mt-4">
           <a
-            href={produto.urlProduto}
+            href={melhorOferta.urlProduto}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2 px-1 rounded-xl transition-colors"
@@ -162,26 +149,19 @@ export function ProductCard({ produto }: Props) {
             <ShoppingCart className="w-3.5 h-3.5" />
             Comprar
           </a>
-          <button 
+          <button
             className="flex-1 flex items-center justify-center gap-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 text-xs font-semibold py-2 px-1 rounded-xl transition-colors"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setModalOpen(true);
+              abrirComparacao();
             }}
           >
-            <TrendingDown className="w-3.5 h-3.5" />
-            Histórico
+            <Scale className="w-3.5 h-3.5" />
+            {outrasLojas > 0 ? `+${outrasLojas} loja${outrasLojas > 1 ? "s" : ""}` : "Comparar"}
           </button>
         </div>
       </div>
-
-      <HistoricoModal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        titulo={produto.titulo} 
-        loja={produto.loja} 
-      />
     </div>
   );
 }

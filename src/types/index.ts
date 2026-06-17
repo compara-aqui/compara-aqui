@@ -30,10 +30,15 @@ export interface HistoricoItem {
 
 export interface ResultadoBusca {
   titulo: string;
-  imagem: string;
+  imagemUrl: string;
   preco: number;
+  precoOriginal?: number | null;
+  descontoPercentual?: number | null;
+  avaliacao?: number | null;
+  numAvaliacoes?: number | null;
   urlProduto: string;
   loja: "amazon" | "kabum" | "americanas";
-  frete: number;
+  frete?: number;
   freteGratis?: boolean;
+  isPrime?: boolean;
 }

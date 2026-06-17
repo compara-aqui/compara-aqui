@@ -3,6 +3,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { ResultadoBusca } from "@/types";
+import { agruparProdutos } from "@/lib/agrupar-produtos";
 import { Search, Loader2 } from "lucide-react";
 
 function getErrorMessage(error: unknown): string {
@@ -213,15 +214,17 @@ function BuscaConteudo() {
                 return true;
               });
 
-              const produtosOrdenados = [...produtosFiltrados].sort((a, b) => {
-                const precoA = a.preco || 0;
-                const precoB = b.preco || 0;
+              const grupos = agruparProdutos(produtosFiltrados);
+
+              const gruposOrdenados = [...grupos].sort((a, b) => {
+                const precoA = a.ofertas[0].preco;
+                const precoB = b.ofertas[0].preco;
                 if (ordenacao === "menor_preco") return precoA - precoB;
                 if (ordenacao === "maior_preco") return precoB - precoA;
                 return 0;
               });
 
-              if (produtosOrdenados.length === 0) {
+              if (gruposOrdenados.length === 0) {
                 return (
                   <div className="flex flex-col items-center justify-center py-16 gap-3">
                     <p className="text-gray-500 font-medium">
@@ -242,8 +245,8 @@ function BuscaConteudo() {
 
               return (
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {produtosOrdenados.map((produto, index) => (
-                    <ProductCard key={`${produto.urlProduto}-${index}`} produto={produto} />
+                  {gruposOrdenados.map((grupo) => (
+                    <ProductCard key={grupo.id} produto={grupo} />
                   ))}
                 </div>
               );
