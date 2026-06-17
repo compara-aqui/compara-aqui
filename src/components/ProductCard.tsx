@@ -12,7 +12,7 @@ interface ProdutoCard {
   imagem?: string;
   imagemUrl?: string;
   urlProduto: string;
-  loja: "mercadolivre" | "amazon";
+  loja: "amazon" | "kabum" | "americanas";
   frete?: number;
   freteGratis?: boolean;
   avaliacao?: number | null;
@@ -27,12 +27,18 @@ interface Props {
 export function ProductCard({ produto }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
 
-  const lojaLabel =
-    produto.loja === "mercadolivre" ? "Mercado Livre" : "Amazon";
-  const lojaColor =
-    produto.loja === "mercadolivre"
-      ? "bg-yellow-100 text-yellow-800"
-      : "bg-orange-100 text-orange-800";
+  const lojaLabels: Record<typeof produto.loja, string> = {
+    amazon: "Amazon",
+    kabum: "Kabum",
+    americanas: "Americanas",
+  };
+  const lojaColors: Record<typeof produto.loja, string> = {
+    amazon: "bg-orange-100 text-orange-800",
+    kabum: "bg-blue-100 text-blue-800",
+    americanas: "bg-red-100 text-red-800",
+  };
+  const lojaLabel = lojaLabels[produto.loja];
+  const lojaColor = lojaColors[produto.loja];
 
   const imagem = produto.imagemUrl || produto.imagem || "";
   const freteGratis =

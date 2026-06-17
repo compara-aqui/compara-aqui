@@ -10,7 +10,7 @@ datasource db {
 model Produto {
   id           String   @id @default(cuid())
   titulo       String
-  loja         String   // amazon | mercadolivre
+  loja         String   // amazon | kabum | americanas
   imagem       String?
   categoria    String?
   marca        String?

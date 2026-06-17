@@ -33,7 +33,7 @@ export default function Home() {
         <div className="relative max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
             <Zap className="w-3 h-3" />
-            Mercado Livre + Amazon em um só lugar
+            Amazon + Kabum + Americanas em um só lugar
           </div>
 
           <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-tight mb-4">
@@ -108,7 +108,7 @@ export default function Home() {
             </div>
             <h3 className="font-bold text-gray-800">Lojas Confiáveis</h3>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Comparamos apenas Mercado Livre e Amazon — as maiores plataformas
+              Comparamos Amazon, Kabum e Americanas — as maiores plataformas
               do Brasil, com compra segura e garantia.
             </p>
           </div>

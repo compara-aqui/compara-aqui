@@ -6,7 +6,7 @@ export interface ProdutoLoja {
   imagem: string;
   urlProduto: string;
   urlAfiliado?: string;
-  loja: "mercadolivre" | "amazon";
+  loja: "amazon" | "kabum" | "americanas";
   frete: number;
   disponivel: boolean;
 }
@@ -23,8 +23,9 @@ export interface ProdutoDetalhes {
 
 export interface HistoricoItem {
   data: string;
-  mercadolivre?: number;
   amazon?: number;
+  kabum?: number;
+  americanas?: number;
 }
 
 export interface ResultadoBusca {
@@ -32,7 +33,7 @@ export interface ResultadoBusca {
   imagem: string;
   preco: number;
   urlProduto: string;
-  loja: "mercadolivre" | "amazon";
+  loja: "amazon" | "kabum" | "americanas";
   frete: number;
   freteGratis?: boolean;
 }

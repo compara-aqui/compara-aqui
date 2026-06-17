@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 export const metadata: Metadata = {
   title: "CompraAqui — Compare preços de verdade",
   description:
-    "Compare preços no Mercado Livre e Amazon. Veja o histórico de preços e encontre a melhor oferta.",
+    "Compare preços na Amazon, Kabum e Americanas. Veja o histórico de preços e encontre a melhor oferta.",
 };
 
 export default function RootLayout({

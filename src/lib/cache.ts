@@ -176,7 +176,7 @@ export function statusCache(): { entradas: number; tamanho: string } {
  */
 export async function buscarCacheFallback24h(
   termo: string,
-  loja?: "amazon" | "mercadolivre"
+  loja?: "amazon" | "kabum" | "americanas"
 ): Promise<ProdutoScrapado[] | null> {
   try {
     const hora24AtrasMilisegundos = 24 * 60 * 60 * 1000;
@@ -221,7 +221,7 @@ export async function buscarCacheFallback24h(
       isPrime: false,
       imagemUrl: p.imagem ?? "",
       urlProduto: p.precos[0]?.urlProduto ?? "",
-      loja: p.loja as "amazon" | "mercadolivre",
+      loja: p.loja as "amazon" | "kabum" | "americanas",
     }));
 
     console.log(

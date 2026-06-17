@@ -134,13 +134,26 @@ function BuscaConteudo() {
                   <input
                     type="radio"
                     name="loja"
-                    value="mercadolivre"
-                    checked={filtroLoja === "mercadolivre"}
-                    onChange={() => setFiltroLoja("mercadolivre")}
+                    value="kabum"
+                    checked={filtroLoja === "kabum"}
+                    onChange={() => setFiltroLoja("kabum")}
                     className="w-4 h-4 text-orange-500 focus:ring-orange-500 border-gray-300"
                   />
                   <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">
-                    Mercado Livre
+                    Kabum
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="loja"
+                    value="americanas"
+                    checked={filtroLoja === "americanas"}
+                    onChange={() => setFiltroLoja("americanas")}
+                    className="w-4 h-4 text-orange-500 focus:ring-orange-500 border-gray-300"
+                  />
+                  <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">
+                    Americanas
                   </span>
                 </label>
               </div>

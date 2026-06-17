@@ -47,18 +47,14 @@ export function PriceChart({ historico }: Props) {
           ]}
         />
         <Legend
-          formatter={(value: string) =>
-            value === "mercadolivre" ? "Mercado Livre" : "Amazon"
-          }
-        />
-        <Line
-          type="monotone"
-          dataKey="mercadolivre"
-          stroke="#F6A30B"
-          strokeWidth={2}
-          dot={{ r: 4 }}
-          connectNulls
-          name="mercadolivre"
+          formatter={(value: string) => {
+            const nomes: Record<string, string> = {
+              amazon: "Amazon",
+              kabum: "Kabum",
+              americanas: "Americanas",
+            };
+            return nomes[value] ?? value;
+          }}
         />
         <Line
           type="monotone"
@@ -68,6 +64,24 @@ export function PriceChart({ historico }: Props) {
           dot={{ r: 4 }}
           connectNulls
           name="amazon"
+        />
+        <Line
+          type="monotone"
+          dataKey="kabum"
+          stroke="#0E7AFE"
+          strokeWidth={2}
+          dot={{ r: 4 }}
+          connectNulls
+          name="kabum"
+        />
+        <Line
+          type="monotone"
+          dataKey="americanas"
+          stroke="#E60014"
+          strokeWidth={2}
+          dot={{ r: 4 }}
+          connectNulls
+          name="americanas"
         />
       </LineChart>
     </ResponsiveContainer>

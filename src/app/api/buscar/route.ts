@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buscarProdutosAmazon, buscarProdutosML } from "@/lib/mercadolivre";
+import {
+  buscarProdutosAmazon,
+  buscarProdutosKabum,
+  buscarProdutosAmericanas,
+} from "@/lib/lojas";
 import {
   buscarCacheMemoria,
   armazenarCacheMemoria,
@@ -60,11 +64,12 @@ export async function GET(request: NextRequest) {
         const refreshCache = async () => {
           try {
             console.log(`[SWR] Iniciando scraping em background para "${termoLimpo}"`);
-            const [produtosAmazon, produtosML] = await Promise.all([
+            const [produtosAmazon, produtosKabum, produtosAmericanas] = await Promise.all([
               comTimeout(buscarProdutosAmazon(termoLimpo), 20000).catch(() => []),
-              comTimeout(buscarProdutosML(termoLimpo), 20000).catch(() => []),
+              comTimeout(buscarProdutosKabum(termoLimpo), 20000).catch(() => []),
+              comTimeout(buscarProdutosAmericanas(termoLimpo), 20000).catch(() => []),
             ]);
-            const todos = [...produtosAmazon, ...produtosML].filter(p => p.preco != null && p.preco > 0);
+            const todos = [...produtosAmazon, ...produtosKabum, ...produtosAmericanas].filter(p => p.preco != null && p.preco > 0);
             if (todos.length > 0) {
               armazenarCacheMemoria(termoLimpo, todos);
               await salvarProdutosNoBD(termoLimpo, todos);
@@ -86,23 +91,27 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(
-      `[API] Buscando: "${termoLimpo}" em Amazon + Mercado Livre (${forcarRefresh ? "forçado" : "normal"})`
+      `[API] Buscando: "${termoLimpo}" em Amazon + Kabum + Americanas (${forcarRefresh ? "forçado" : "normal"})`
     );
 
-    // 2. Busca em ambos em paralelo com timeout
-    const [produtosAmazon, produtosML] = await Promise.all([
+    // 2. Busca nas 3 lojas em paralelo com timeout
+    const [produtosAmazon, produtosKabum, produtosAmericanas] = await Promise.all([
       comTimeout(buscarProdutosAmazon(termoLimpo), 20000).catch((err) => {
         console.error("[API] Erro Amazon:", err.message);
         return [];
       }),
-      comTimeout(buscarProdutosML(termoLimpo), 20000).catch((err) => {
-        console.error("[API] Erro Mercado Livre:", err.message);
+      comTimeout(buscarProdutosKabum(termoLimpo), 20000).catch((err) => {
+        console.error("[API] Erro Kabum:", err.message);
+        return [];
+      }),
+      comTimeout(buscarProdutosAmericanas(termoLimpo), 20000).catch((err) => {
+        console.error("[API] Erro Americanas:", err.message);
         return [];
       }),
     ]);
 
     // 3. Combina resultados
-    const todosOsProdutos = [...produtosAmazon, ...produtosML];
+    const todosOsProdutos = [...produtosAmazon, ...produtosKabum, ...produtosAmericanas];
 
     // 4. Filtra produtos sem preço
     const produtosValidos = todosOsProdutos.filter(
@@ -110,7 +119,7 @@ export async function GET(request: NextRequest) {
     );
 
     console.log(
-      `[API] Total: ${produtosValidos.length} produtos (${produtosAmazon.length} Amazon + ${produtosML.length} ML)`
+      `[API] Total: ${produtosValidos.length} produtos (${produtosAmazon.length} Amazon + ${produtosKabum.length} Kabum + ${produtosAmericanas.length} Americanas)`
     );
 
     // 5. Armazena no cache de memória (rápido, síncrono)
