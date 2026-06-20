@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 
@@ -39,10 +39,13 @@ export async function POST(request: NextRequest) {
       data: { nome, email, mensagem },
     });
 
-    // Fire and forget: não bloqueia a resposta ao usuário se o e-mail demorar/falhar
-    enviarEmailFeedback(feedback).catch((err) => {
-      console.error("[Feedback] Erro ao enviar e-mail:", getErrorMessage(err));
-    });
+    // Roda depois da resposta ser enviada, sem atrasar o usuário.
+    // Sem o after(), a Vercel encerra a function antes da Promise terminar.
+    after(() =>
+      enviarEmailFeedback(feedback).catch((err) => {
+        console.error("[Feedback] Erro ao enviar e-mail:", getErrorMessage(err));
+      })
+    );
 
     return NextResponse.json({ ok: true });
   } catch (error: unknown) {
