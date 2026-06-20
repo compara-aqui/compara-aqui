@@ -144,6 +144,13 @@ export function FeedbackWidget() {
                   </p>
                 </div>
 
+                <p className="text-xs text-gray-400">
+                  Seus dados e sua mensagem são vistos apenas pela equipe do
+                  CompraAqui e usados somente para responder seu feedback.
+                  Não serão divulgados publicamente nem compartilhados com
+                  terceiros.
+                </p>
+
                 {status === "erro" && (
                   <p className="text-sm text-red-500">{erro}</p>
                 )}
