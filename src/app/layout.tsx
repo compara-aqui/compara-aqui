@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 export const metadata: Metadata = {
   title: "CompraAqui — Compare preços de verdade",
@@ -28,6 +29,7 @@ export default function RootLayout({
             </p>
           </div>
         </footer>
+        <FeedbackWidget />
       </body>
     </html>
   );
