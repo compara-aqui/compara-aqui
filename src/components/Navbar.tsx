@@ -22,7 +22,7 @@ export function Navbar() {
             <BarChart2 className="w-5 h-5 text-white" />
           </div>
           <span className="font-bold text-gray-900">
-            Compra<span className="text-orange-500">Aqui</span>
+            Compara<span className="text-orange-500">Aqui</span>
           </span>
         </Link>
 
