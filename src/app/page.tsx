@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, TrendingDown, ShieldCheck, BarChart2, Zap } from "lucide-react";
+import { Search, Flame, ShieldCheck, BarChart2, Zap } from "lucide-react";
 
 export default function Home() {
   const [termo, setTermo] = useState("");
@@ -42,8 +42,8 @@ export default function Home() {
           </h1>
 
           <p className="text-lg text-gray-500 mb-10 max-w-lg mx-auto">
-            Sem desconto falso, sem enganação. Veja o histórico completo e
-            encontre o momento certo para comprar.
+            Sem desconto falso, sem enganação. Compare preço e frete em tempo
+            real e encontre a melhor oferta.
           </p>
 
           {/* Barra de busca principal */}
@@ -87,18 +87,19 @@ export default function Home() {
       {/* Diferenciais */}
       <section className="max-w-5xl mx-auto px-4 py-20">
         <h2 className="text-center text-2xl font-bold text-gray-800 mb-12">
-          Por que usar o CompraAqui?
+          Por que usar o ComparaAqui?
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-3">
             <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-              <TrendingDown className="w-5 h-5 text-orange-500" />
+              <Flame className="w-5 h-5 text-orange-500" />
             </div>
-            <h3 className="font-bold text-gray-800">Histórico de Preços</h3>
+            <h3 className="font-bold text-gray-800">Selo de Boas Ofertas</h3>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Veja como o preço variou ao longo do tempo em cada loja. Saiba se
-              é realmente uma boa oferta agora.
+              Identificamos automaticamente os produtos com os melhores
+              descontos, com selos de &ldquo;Ótimo Preço&rdquo; e &ldquo;Bom
+              Preço&rdquo;.
             </p>
           </div>
 

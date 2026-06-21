@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ShoppingCart, Heart, Flame, ThumbsUp, Scale } from "lucide-react";
+import { ShoppingCart, Flame, ThumbsUp, Scale } from "lucide-react";
 import type { ProdutoAgrupado } from "@/lib/agrupar-produtos";
 
 interface Props {
@@ -87,19 +87,6 @@ export function ProductCard({ produto }: Props) {
             -{melhorOferta.descontoPercentual}%
           </span>
         )}
-
-        <button
-          className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors z-10 shadow-sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Lógica de alerta/favoritos no futuro
-            alert("Produto adicionado aos alertas!");
-          }}
-          title="Criar Alerta de Preço"
-        >
-          <Heart className="w-4 h-4" />
-        </button>
       </div>
 
       <div className="p-4 flex flex-col gap-2 flex-1">

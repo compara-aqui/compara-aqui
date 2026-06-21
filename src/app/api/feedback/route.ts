@@ -75,7 +75,7 @@ async function enviarEmailFeedback(feedback: {
 
   const resend = new Resend(apiKey);
   await resend.emails.send({
-    from: process.env.FEEDBACK_FROM_EMAIL || "CompraAqui <onboarding@resend.dev>",
+    from: process.env.FEEDBACK_FROM_EMAIL || "ComparaAqui <onboarding@resend.dev>",
     to: destinatarios.split(",").map((e) => e.trim()),
     replyTo: feedback.email,
     subject: `Novo feedback de ${feedback.nome}`,

@@ -94,7 +94,7 @@ export function FeedbackWidget() {
                     Deixe seu feedback
                   </h2>
                   <p className="text-sm text-gray-500 mt-1">
-                    Sugestões, problemas ou ideias para o CompraAqui.
+                    Sugestões, problemas ou ideias para o ComparaAqui.
                   </p>
                 </div>
 
@@ -146,7 +146,7 @@ export function FeedbackWidget() {
 
                 <p className="text-xs text-gray-400">
                   Seus dados e sua mensagem são vistos apenas pela equipe do
-                  CompraAqui e usados somente para responder seu feedback.
+                  ComparaAqui e usados somente para responder seu feedback.
                   Não serão divulgados publicamente nem compartilhados com
                   terceiros.
                 </p>
