@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@next/third-parties": "^16.2.9",
     "@prisma/client": "^5.22.0",
     "axios": "^1.16.0",
     "cheerio": "^1.2.0",
